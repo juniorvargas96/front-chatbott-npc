@@ -1,4 +1,4 @@
-// script.js (versão final)
+// script.js (versão final corrigida)
 document.addEventListener('DOMContentLoaded', function() {
     // --- ELEMENTOS DA NAVEGAÇÃO ---
     const floatButton = document.getElementById('float-button');
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🔥 URL de produção no Render
     const apiUrl = 'https://chatbot-front-e-back-main-1.onrender.com/chat/';
 
-    // --- LÓGICA DE NAVEGAÇÃO ENTRE TELAS ---
+    // --- BOTÃO FLUTUANTE → abre só a primeira tela
     floatButton.addEventListener('click', () => {
         mainWindow.classList.add('visible');
         floatButton.style.display = 'none';
@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
         floatButton.style.display = 'flex';
         welcomeScreen.classList.remove('hidden');
         chatScreen.classList.add('hidden');
+
+        // limpa qualquer mensagem antiga
+        messagesArea.innerHTML = "";
     }
 
     backButtons.forEach(button => {
@@ -40,9 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // --- 🔥 QUANDO CLICAR EM “Pergunte ao chat” → MOSTRA AS MENSAGENS AUTOMÁTICAS ---
     startChatButton.addEventListener('click', () => {
         welcomeScreen.classList.add('hidden');
         chatScreen.classList.remove('hidden');
+
+        // limpa mensagens antigas sempre que abrir um novo chat
+        messagesArea.innerHTML = "";
+
+        sendWelcomeSequence();  // ⬅⬅⬅ mensagem automática do bot aqui!
     });
 
     // --- COMUNICAÇÃO COM A API ---
@@ -55,9 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
         addMessage(pergunta, 'user');
         chatInput.value = '';
 
-        try {
-            addMessage('Digitando...', 'bot-loading');
+        const typingBubble = showTypingAnimation();
 
+        try {
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,20 +79,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
 
-            removeLoadingMessage();
-            addMessage(data.resposta, 'bot');
+            const delay = Math.min(2000 + data.resposta.length * 15, 6000);
+
+            setTimeout(() => {
+                typingBubble.remove();
+                addMessage(data.resposta, 'bot');
+            }, delay);
 
         } catch (error) {
             console.error('Falha ao comunicar com a API:', error);
-            removeLoadingMessage();
+
+            typingBubble.remove();
             addMessage('Desculpe, estou com problemas de conexão. Tente novamente.', 'bot');
         }
     });
 
-    // Função para adicionar novas mensagens (com Markdown)
+    // --- FUNÇÃO PARA ADICIONAR MENSAGENS ---
     function addMessage(text, type) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}`;
+        messageDiv.className = `message ${type} fade-in`;
 
         let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         htmlText = htmlText.replace(/\*(.*?)\*/g, '<em>$1</em>');
@@ -93,12 +107,33 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesArea.appendChild(messageDiv);
         messagesArea.scrollTop = messagesArea.scrollHeight;
     }
-    
-    // Remover "Digitando..."
-    function removeLoadingMessage() {
-        const loadingMessage = document.querySelector('.bot-loading');
-        if (loadingMessage) {
-            loadingMessage.remove();
-        }
+
+    // --- ANIMAÇÃO "digitando..." ---
+    function showTypingAnimation() {
+        const bubble = document.createElement('div');
+        bubble.className = 'message bot bot-loading fade-in';
+        bubble.innerHTML = `
+            <span class="typing-dots">
+                <span></span><span></span><span></span>
+            </span>
+        `;
+        messagesArea.appendChild(bubble);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+        return bubble;
+    }
+
+    // --- SEQUÊNCIA AUTOMÁTICA DAS MENSAGENS DO BOT ---
+    function sendWelcomeSequence() {
+        setTimeout(() => {
+            addMessage('Olá! Sou o NPC-Chatbot, assistente virtual do Jovem Programador.', 'bot');
+
+            const typing = showTypingAnimation();
+
+            setTimeout(() => {
+                typing.remove();
+                addMessage('Em que posso te ajudar hoje?', 'bot');
+            }, 1300);
+
+        }, 300);
     }
 });
