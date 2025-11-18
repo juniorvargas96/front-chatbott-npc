@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const messagesArea = document.getElementById('messages-area');
 
     // 🔥 URL de produção no Render
-    const apiUrl = 'https://chatbot-front-e-back-main-1.onrender.com/chat/';
+    const apiUrl = 'https://chatbot-front-e-back-main-1.onrender.com/chat';
 
     // --- BOTÃO FLUTUANTE → abre só a primeira tela
     floatButton.addEventListener('click', () => {
