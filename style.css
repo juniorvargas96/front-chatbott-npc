@@ -435,3 +435,32 @@ input:focus:not(:focus-visible) {
         height: 42px;
     }
 }
+
+/* ============================================
+   AJUSTE REAL DA IMAGEM DE FUNDO (DESKTOP & MOBILE)
+   ============================================ */
+
+/* Garante que a imagem sempre cubra a tela inteira */
+body {
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed; /* Evita esticar ao rolar */
+}
+
+/* MOBILE: corrige cortes laterais e prioriza o topo */
+@media (max-width: 480px) {
+    body {
+        background-size: cover !important;
+        background-position: top center !important;
+        background-attachment: scroll; /* evita bug do fixed no mobile */
+    }
+}
+
+/* TABLET */
+@media (min-width: 481px) and (max-width: 768px) {
+    body {
+        background-size: cover !important;
+        background-position: center center !important;
+    }
+}
